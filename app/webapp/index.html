@@ -39,13 +39,16 @@
                                 <span class="glyphicon glyphicon-cloud-upload display-4 text-muted mb-3"></span>
                                 <h3 class="h5 text-muted">Drag & Drop Folders Here</h3>
                                 <p class="text-muted mb-3">
-                                    Drop folders containing image sequences, or click to select
+                                    Drop folders containing image sequences onto this area
                                 </p>
                                 <button type="button" class="btn btn-primary" id="selectFolderBtn">
                                     <span class="glyphicon glyphicon-folder-open mr-1"></span>
-                                    Select Folders
+                                    Browse for Folders
                                 </button>
-                                <input type="file" id="folderInput" webkitdirectory multiple hidden>
+                                <input type="file" id="folderInput" webkitdirectory multiple style="display: none;">
+                                <p class="text-muted small mt-2">
+                                    <em>Note: You'll be able to select multiple folders at once</em>
+                                </p>
                             </div>
                         </div>
 
@@ -93,7 +96,7 @@
                         <div class="mt-3">
                             <button type="button" class="btn btn-success" id="downloadAllBtn">
                                 <span class="glyphicon glyphicon-download mr-1"></span>
-                                Download All Loop Files
+                                Download All Loop Folders
                             </button>
                             <button type="button" class="btn btn-secondary ml-2" id="resetBtn">
                                 <span class="glyphicon glyphicon-refresh mr-1"></span>

@@ -23,12 +23,27 @@ class LoopBuilderApp {
     init() {
         this.bindEvents();
         this.updateConfig();
+        this.checkBrowserSupport();
         this.showToast('Welcome to Data Loop Builder!', 'info');
+    }
+
+    checkBrowserSupport() {
+        // Check if the browser supports directory upload
+        const input = document.createElement('input');
+        input.type = 'file';
+        
+        if (!('webkitdirectory' in input)) {
+            this.showToast('Your browser may have limited folder support. Drag & drop is recommended.', 'warning');
+            $('#selectFolderBtn').prop('disabled', true).text('Drag & Drop Only');
+        }
     }
 
     bindEvents() {
         // Folder selection events
-        $('#selectFolderBtn').on('click', () => this.selectFolders());
+        $('#selectFolderBtn').on('click', (e) => {
+            e.preventDefault();
+            this.selectFolders();
+        });
         $('#folderInput').on('change', (e) => this.handleFolderSelection(e));
         
         // Drag and drop events
@@ -46,16 +61,31 @@ class LoopBuilderApp {
         $('#downloadAllBtn').on('click', () => this.downloadAll());
         $('#resetBtn').on('click', () => this.reset());
         
-        // Click on drop zone
-        $('#dropZone').on('click', () => this.selectFolders());
+        // Click on drop zone to also trigger folder selection
+        $('#dropZone').on('click', (e) => {
+            if (e.target === dropZone || $(e.target).closest('.drop-zone-content').length) {
+                this.selectFolders();
+            }
+        });
     }
 
     selectFolders() {
-        $('#folderInput').click();
+        const folderInput = document.getElementById('folderInput');
+        if (folderInput) {
+            folderInput.click();
+        }
     }
 
     handleFolderSelection(event) {
+        console.log('Folder selection triggered', event);
         const files = Array.from(event.target.files);
+        console.log('Selected files:', files.length);
+        
+        if (files.length === 0) {
+            this.showToast('No folders selected', 'warning');
+            return;
+        }
+        
         this.processFiles(files);
     }
 
@@ -256,15 +286,15 @@ class LoopBuilderApp {
                 this.addLogEntry(`Processing folder: ${folder.name}`, 'info');
 
                 const processedImages = await ImageProcessor.processFolder(folder, this.config);
-                const html = await HTMLGenerator.generateLoop(folder.name, processedImages, this.config);
+                const folderStructure = await HTMLGenerator.generateLoop(folder.name, processedImages, this.config);
                 
                 this.processedResults.push({
                     name: folder.name,
-                    html: html,
-                    imageCount: processedImages.length
+                    folderStructure: folderStructure,
+                    imageCount: processedImages.images.length
                 });
 
-                this.addLogEntry(`✓ Generated loop for ${folder.name} (${processedImages.length} images)`, 'success');
+                this.addLogEntry(`✓ Generated loop for ${folder.name} (${processedImages.images.length} images)`, 'success');
                 processed++;
                 this.updateProgress(processed, total);
 
@@ -331,7 +361,7 @@ class LoopBuilderApp {
                             ${result.name}
                         </div>
                         <div class="result-details">
-                            ${result.imageCount} images • HTML loop ready
+                            ${result.imageCount} images • HTML folder with external files
                         </div>
                     </div>
                     <div class="result-actions">
@@ -341,7 +371,7 @@ class LoopBuilderApp {
                         </button>
                         <button type="button" class="btn btn-success btn-sm download-btn" data-index="${index}">
                             <span class="glyphicon glyphicon-download mr-1"></span>
-                            Download
+                            Download Folder
                         </button>
                     </div>
                 </div>
@@ -364,25 +394,56 @@ class LoopBuilderApp {
 
     previewLoop(index) {
         const result = this.processedResults[index];
+        const indexHtml = result.folderStructure.files['index.html'].content;
         const previewWindow = window.open('', '_blank', 'width=800,height=600');
-        previewWindow.document.write(result.html);
+        previewWindow.document.write(indexHtml);
         previewWindow.document.close();
     }
 
-    downloadSingle(index) {
+    async downloadSingle(index) {
         const result = this.processedResults[index];
-        const blob = new Blob([result.html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
+        await this.downloadFolderStructure(result.folderStructure, `${result.name}_loop`);
+        this.showToast(`Downloaded ${result.name}_loop folder`, 'success');
+    }
+
+    async downloadFolderStructure(folderStructure, zipName) {
+        const zip = new JSZip();
+        
+        // Add all files from the folder structure to the ZIP
+        this.addFolderToZip(zip, folderStructure);
+        
+        // Generate and download the ZIP
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(zipBlob);
         
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${result.name}_loop.html`;
+        link.download = `${zipName}.zip`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        
-        this.showToast(`Downloaded ${result.name}_loop.html`, 'success');
+    }
+
+    addFolderToZip(zip, folderStructure, basePath = '') {
+        Object.entries(folderStructure.files).forEach(([filename, fileData]) => {
+            const fullPath = basePath ? `${basePath}/${filename}` : filename;
+            
+            if (fileData.type === 'folder') {
+                // Recursively add folder contents
+                this.addFolderToZip(zip, fileData, fullPath);
+            } else {
+                // Add file to ZIP
+                if (fileData.content.startsWith('data:')) {
+                    // Handle data URLs (images)
+                    const base64Data = fileData.content.split(',')[1];
+                    zip.file(fullPath, base64Data, { base64: true });
+                } else {
+                    // Handle text files
+                    zip.file(fullPath, fileData.content);
+                }
+            }
+        });
     }
 
     async downloadAll() {
@@ -394,9 +455,10 @@ class LoopBuilderApp {
         try {
             const zip = new JSZip();
             
-            // Add each result to the ZIP
+            // Add each result folder to the ZIP
             this.processedResults.forEach(result => {
-                zip.file(`${result.name}_loop.html`, result.html);
+                const folderPath = `${result.name}_loop`;
+                this.addFolderToZip(zip, result.folderStructure, folderPath);
             });
 
             // Generate ZIP file
@@ -412,7 +474,7 @@ class LoopBuilderApp {
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
             
-            this.showToast(`Downloaded ${this.processedResults.length} loops as ZIP file`, 'success');
+            this.showToast(`Downloaded ${this.processedResults.length} loop folders as ZIP file`, 'success');
             
         } catch (error) {
             this.showToast('Error creating ZIP file: ' + error.message, 'error');
