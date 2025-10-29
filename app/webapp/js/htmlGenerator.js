@@ -28,44 +28,44 @@ class HTMLGenerator {
             files: {}
         };
 
-        // Generate index.html with external references
-        folderStructure.files['index.html'] = {
+        // Generate index.htm with external references
+        folderStructure.files['index.htm'] = {
             type: 'text/html',
             content: this.generateHTMLWithExternalFiles(title, images, looperConfig, width)
         };
 
-        // Add jQuery library
-        const jqueryContent = await this.loadJQueryLibrary();
-        folderStructure.files['jquery.min.js'] = {
-            type: 'application/javascript',
-            content: jqueryContent
-        };
-
-        // Add looper JavaScript
-        folderStructure.files['looper.js'] = {
-            type: 'application/javascript',
-            content: this.getLooperScript()
-        };
-
-        // Add CSS file
-        folderStructure.files['styles.css'] = {
-            type: 'text/css',
-            content: this.generateCSSFile(width)
-        };
-
-        // Create images folder with actual image files
-        folderStructure.files['images'] = {
+        // Create src folder for source files
+        folderStructure.files['src'] = {
             type: 'folder',
             files: {}
         };
 
-        // Convert data URLs back to image files
+        // Add jQuery library to src folder
+        const jqueryContent = await this.loadJQueryLibrary();
+        folderStructure.files['src'].files['jquery.min.js'] = {
+            type: 'application/javascript',
+            content: jqueryContent
+        };
+
+        // Add looper JavaScript to src folder
+        folderStructure.files['src'].files['looper.js'] = {
+            type: 'application/javascript',
+            content: this.getLooperScript()
+        };
+
+        // Add CSS file to src folder
+        folderStructure.files['src'].files['styles.css'] = {
+            type: 'text/css',
+            content: this.generateCSSFile(width)
+        };
+
+        // Add image files directly to root folder
         for (let i = 0; i < images.length; i++) {
             const image = images[i];
             const extension = this.getImageExtension(image.name);
             const filename = `image_${String(i + 1).padStart(3, '0')}.${extension}`;
             
-            folderStructure.files['images'].files[filename] = {
+            folderStructure.files[filename] = {
                 type: `image/${extension}`,
                 content: image.dataUrl,
                 originalName: image.name
@@ -76,10 +76,10 @@ class HTMLGenerator {
     }
 
     static generateHTMLWithExternalFiles(title, images, looperConfig, width) {
-        // Generate image elements with external file references
+        // Generate image elements with external file references (images at root)
         const imageElements = images.map((image, index) => {
             const extension = this.getImageExtension(image.name);
-            const filename = `images/image_${String(index + 1).padStart(3, '0')}.${extension}`;
+            const filename = `image_${String(index + 1).padStart(3, '0')}.${extension}`;
             return `        <img src="${filename}" alt="${image.alt}" class="img-responsive">`;
         }).join('\n');
 
@@ -88,9 +88,9 @@ class HTMLGenerator {
 <head>
     <meta charset="UTF-8">
     <title>${title} - Data Looper</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="jquery.min.js"></script>
-    <script src="looper.js"></script>
+    <link rel="stylesheet" href="src/styles.css">
+    <script src="src/jquery.min.js"></script>
+    <script src="src/looper.js"></script>
     <script>
         $(document).ready(function() { 
             $(".looper").looper(${looperConfig}); 

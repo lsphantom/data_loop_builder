@@ -394,16 +394,105 @@ class LoopBuilderApp {
 
     previewLoop(index) {
         const result = this.processedResults[index];
-        const indexHtml = result.folderStructure.files['index.html'].content;
-        const previewWindow = window.open('', '_blank', 'width=800,height=600');
-        previewWindow.document.write(indexHtml);
+        
+        // Generate a self-contained HTML for preview (with embedded assets)
+        const previewHtml = this.generatePreviewHTML(result);
+        
+        // Show in popup window
+        const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+        previewWindow.document.write(previewHtml);
         previewWindow.document.close();
+    }
+
+    generatePreviewHTML(result) {
+        const { folderStructure } = result;
+        const config = this.getConfigFromResult(result);
+        
+        // Get the CSS and JS content
+        const cssContent = folderStructure.files['src'].files['styles.css'].content;
+        const jsContent = folderStructure.files['src'].files['looper.js'].content;
+        const jqueryContent = folderStructure.files['src'].files['jquery.min.js'].content;
+        
+        // Get image data
+        const images = [];
+        Object.keys(folderStructure.files).forEach(key => {
+            if (key.startsWith('image_') && key !== 'index.htm') {
+                const imageFile = folderStructure.files[key];
+                images.push({
+                    src: imageFile.content, // data URL
+                    name: key
+                });
+            }
+        });
+        
+        // Generate images HTML
+        const imageElements = images.map(img => 
+            `        <img src="${img.src}" alt="${img.name}" class="img-responsive">`
+        ).join('\n');
+        
+        // Create self-contained HTML
+        return `<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>${result.name} - Preview</title>
+    <style>
+${cssContent}
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="loop-content">
+            <div id="preload-wrapper">
+                <div class="looper-wrap">
+                    <div class="looper">
+${imageElements}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+${jqueryContent}
+    </script>
+    <script>
+${jsContent}
+    </script>
+    <script>
+        $(document).ready(function() { 
+            $(".looper").looper(${this.generateLooperConfig(config)}); 
+        });
+    </script>
+</body>
+</html>`;
+    }
+
+    getConfigFromResult(result) {
+        // Get current configuration from the form
+        return {
+            showNavigation: $('#showNavigation').is(':checked'),
+            showCounter: $('#showCounter').is(':checked'),
+            showSpeedControls: $('#showSpeedControls').is(':checked'),
+            showStepControls: $('#showStepControls').is(':checked'),
+            autoplay: $('#autoplay').is(':checked')
+        };
+    }
+
+    generateLooperConfig(config) {
+        return JSON.stringify({
+            navigation: config.showNavigation,
+            slide_captions: false,
+            slide_counter: config.showCounter,
+            speed_controls: config.showSpeedControls,
+            forward_backward: config.showStepControls,
+            autoplay: config.autoplay
+        }, null, 2);
     }
 
     async downloadSingle(index) {
         const result = this.processedResults[index];
-        await this.downloadFolderStructure(result.folderStructure, `${result.name}_loop`);
-        this.showToast(`Downloaded ${result.name}_loop folder`, 'success');
+        await this.downloadFolderStructure(result.folderStructure, result.name);
+        this.showToast(`Downloaded ${result.name} folder`, 'success');
     }
 
     async downloadFolderStructure(folderStructure, zipName) {
@@ -457,7 +546,7 @@ class LoopBuilderApp {
             
             // Add each result folder to the ZIP
             this.processedResults.forEach(result => {
-                const folderPath = `${result.name}_loop`;
+                const folderPath = result.name;
                 this.addFolderToZip(zip, result.folderStructure, folderPath);
             });
 

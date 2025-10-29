@@ -221,21 +221,102 @@ header {
     padding: 10px;
     background-color: white;
     min-height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
 }
 
 .preview-placeholder {
     color: #6c757d;
     font-style: italic;
+    text-align: center;
+    padding: 40px;
+}
+
+.preview-looper-wrapper {
+    margin: 0 auto;
 }
 
 .preview-looper {
-    max-width: 100%;
-    max-height: 200px;
+    position: relative;
 }
+
+.preview-looper img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Looper styles for preview */
+.preview-looper .looper-wrap {
+    display: block;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+}
+
+.preview-looper .navigation {
+    padding: 8px;
+    overflow: hidden;
+    color: #000;
+    background: #f8f9fa;
+    border-top: 1px solid #ddd;
+}
+
+.preview-looper .nav_left {
+    float: left;
+}
+
+.preview-looper .nav_right {
+    float: right;
+}
+
+.preview-looper .prev, .preview-looper .next, .preview-looper .reset, 
+.preview-looper .slower, .preview-looper .faster, .preview-looper .play, 
+.preview-looper .pause {
+    float: left;
+    display: block;
+    width: 24px;
+    height: 24px;
+    margin: 2px;
+    cursor: pointer;
+    border: 1px solid #333;
+    text-align: center;
+    line-height: 22px;
+    border-radius: 3px;
+    background: #f8f9fa;
+    color: #333;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.preview-looper .prev:hover, .preview-looper .next:hover, .preview-looper .reset:hover, 
+.preview-looper .slower:hover, .preview-looper .faster:hover, .preview-looper .play:hover, 
+.preview-looper .pause:hover {
+    color: #007bff;
+    border-color: #007bff;
+    background: #e7f1ff;
+}
+
+.preview-looper .counter {
+    float: left;
+    margin-top: 4px;
+    margin-right: 8px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.preview-looper .speed {
+    float: left;
+    border-left: 1px solid #333;
+    padding: 0 6px;
+    margin-left: 6px;
+}
+
+.preview-looper .play::after { content: "▶"; }
+.preview-looper .pause::after { content: "⏸"; }
+.preview-looper .reset::after { content: "⏹"; }
+.preview-looper .prev::after { content: "⏮"; }
+.preview-looper .next::after { content: "⏭"; }
+.preview-looper .slower::after { content: "−"; }
+.preview-looper .faster::after { content: "+"; }
+.preview-looper .invisible { visibility: hidden; }
 
 /* Button Styles */
 .btn {
