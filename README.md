@@ -10,6 +10,16 @@ Data Loop Builder is a shell script (`loopBuilder.csh`) that processes directori
 
 ## Features
 
+### Web Application Features
+- **Drag & Drop Interface**: Simply drag folders containing images onto the web app
+- **Real-time Processing**: Watch as your image sequences are processed with progress tracking
+- **Batch Processing**: Handle multiple folders at once
+- **Live Preview**: Preview your loops before downloading
+- **Configurable Settings**: Customize loop behavior, controls, and image filtering
+- **Download Options**: Download individual loops or all loops as a ZIP file
+- **Modern UI**: Responsive, user-friendly interface that works on desktop and mobile
+
+### Core Loop Features
 - **Automatic HTML Generation**: Creates self-contained HTML files with embedded controls
 - **Interactive Controls**: 
   - Play/Pause functionality
@@ -54,6 +64,26 @@ Data Loop Builder is a shell script (`loopBuilder.csh`) that processes directori
    ```
 
 ## Usage
+
+### Web Application (Recommended)
+
+The easiest way to use Data Loop Builder is through the web application:
+
+1. **Start the Web App**:
+   ```bash
+   cd app/webapp
+   python3 -m http.server 8080
+   ```
+
+2. **Open in Browser**: Navigate to `http://localhost:8080`
+
+3. **Create Loops**:
+   - Drag and drop folders containing image sequences onto the drop zone
+   - Configure loop settings in the right panel
+   - Click "Generate Image Loops"
+   - Preview and download your interactive loops
+
+### Command Line (Original Script)
 
 ### Basic Syntax
 
