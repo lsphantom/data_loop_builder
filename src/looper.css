@@ -1,0 +1,168 @@
+.looper-wrap {
+	clear: left;
+	float: none;
+	display: block;
+	margin-bottom: 20px auto;
+	font-family: Arial, sans-serif;
+	margin: 0px auto;
+}
+.looper {
+	position: relative;
+}
+.overlay {
+	position: absolute;
+	display: none;
+	z-index: 5;
+}
+.overlay-toggle {
+	top: 5px;
+	left: 5px;
+	position: absolute;
+	padding: 5px 8px;
+	padding-left: 30px;
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+	z-index: 11;
+	font-size: 12px;
+	font-weight: bold;
+	cursor: pointer;
+	color: #fff;
+	text-decoration: none;
+	background: rgba(0,0,0,0.7) url(controls/overlay_toggle_bg.png) center left no-repeat;
+}
+.overlay-toggle:visited {
+	color: #fff;
+}
+.overlay-toggle:hover {
+	background-color: rgba(20,20,20,0.7);
+}
+/* ////////////////////////////////
+NAVIGATION
+//////////////////////////////// */
+	
+.navigation {
+	padding: 5px;
+	overflow: hidden;
+	color: #000;
+	background-color: #fff;
+}
+.nav_left {
+	float: left;
+}
+.nav_right {
+	float: right;
+}
+
+span.caption {
+	float: left;
+	margin-left: 10px;
+	padding: 4px 10px;
+	font-size: 12px;
+	font-weight: bold;
+	min-width: 220px;
+	max-width: 240px;
+}
+.prev, .next, .reset,
+.slower, .faster, .play, .pause {
+	float: left;
+	display: block;
+	width: 26px;
+	height: 26px;
+	margin: 4px;
+	padding-top: 1px;
+	padding-left: 5px;
+	overflow: hidden;
+	cursor: pointer;
+	border: 2px solid;
+	text-align:center;
+	vertical-align:middle;
+	border-radius: 2px;
+	font-size:12px;
+}
+.prev:hover, .next:hover, .reset:hover,
+.slower:hover, .faster:hover, .play:hover, .pause:hover,
+b.slower:hover, b.faster:hover {
+	color: #1f7eff;
+}
+.prev:focus, .next:focus, .reset:focus,
+.slower:focus, .faster:focus, .play:focus, .pause:focus,
+b.slower:focus, b.faster:focus {
+	color: #1f7eff;
+	outline: 1px dotted #000;
+}
+
+.next {
+	margin-right: 20px;
+}
+
+.counter {
+	float: left;
+	margin-top: 8px;
+	margin-right: 8px;
+}
+.counter b {
+	padding: 0 2px;
+}
+.speed {
+	float: left;
+	display: block;
+	border-left: 1px solid #333;
+	padding: 0px 10px;
+}
+.slower, .faster {
+	display: block;
+	float: left;
+	width: 26px;
+	height: 26px;
+	margin-top:4px;
+	margin-right:6px;
+	margin-left:6px;
+	text-align:center;
+	vertical-align:middle;
+	padding-top:1px;
+	padding-left: 6px;
+	overflow: hidden;
+	cursor: pointer;
+	border:2px solid;
+	border-radius:2.5em;
+	font-size:10px;
+}
+
+.activeslide {
+	z-index: 9999;
+}
+.prevslide {
+	z-index: 1;
+}
+
+/* ////////////////////////////////
+DATA LOOPER 2.0 
+//////////////////////////////// */
+.looper-controls {
+	background-color: #eee;
+	min-height: 30px;
+}
+.looper-info p, .looper-nav-controls p {
+	font-size: 12px;
+	font-weight: bold;
+}
+.looper-info span {
+	color: #ED7A28;
+	font-weight: normal;
+}
+.looper-nav-controls {
+}
+.looper-nav-controls input {
+	border-radius: 2px;
+	padding: 4px;
+	margin-top: 8px;
+	color: #333;
+}
+.looper-nav-controls input:hover {
+	color: orange;
+	cursor: pointer;
+}
+.looper-nav-controls p:nth-child(2) span {
+	font-size: 10px;
+}
