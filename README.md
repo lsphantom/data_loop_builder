@@ -1,5 +1,5 @@
 # Data Loop Builder
-Created by Bryan Guarente (The COMET Program)
+Created by Bryan Guarente (The COMET Program / UCAR), adaptation and webapp build by Gary Pacheco (The COMET Program / UCAR)
 
 A tool for automatically generating interactive HTML image loops from directories of images. Perfect for creating animated sequences from scientific data, weather imagery, time-lapse sequences, and other image series.
 
