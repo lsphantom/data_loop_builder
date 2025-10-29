@@ -1,0 +1,435 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{TITLE}} - Data Looper</title>
+    <style>
+        /* Bootstrap CSS (minimal required styles) */
+        .container-fluid {
+            padding-right: 15px;
+            padding-left: 15px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        .img-responsive {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Looper CSS */
+        .looper-wrap {
+            clear: left;
+            float: none;
+            display: block;
+            margin-bottom: 20px auto;
+            font-family: Arial, sans-serif;
+            margin: 0px auto;
+        }
+
+        .looper {
+            position: relative;
+        }
+
+        .navigation {
+            padding: 5px;
+            overflow: hidden;
+            color: #000;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+        }
+
+        .nav_left {
+            float: left;
+        }
+
+        .nav_right {
+            float: right;
+        }
+
+        .prev, .next, .reset,
+        .slower, .faster, .play, .pause {
+            float: left;
+            display: block;
+            width: 32px;
+            height: 32px;
+            margin: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid #333;
+            text-align: center;
+            vertical-align: middle;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 28px;
+            background-color: #f8f9fa;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .prev:hover, .next:hover, .reset:hover,
+        .slower:hover, .faster:hover, .play:hover, .pause:hover {
+            color: #007bff;
+            border-color: #007bff;
+            background-color: #e7f1ff;
+        }
+
+        .counter {
+            float: left;
+            margin-top: 12px;
+            margin-right: 8px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .counter b {
+            padding: 0 2px;
+        }
+
+        .speed {
+            float: left;
+            display: block;
+            border-left: 1px solid #333;
+            padding: 0px 10px;
+            margin-left: 10px;
+        }
+
+        .slower, .faster {
+            border-radius: 50%;
+            font-weight: bold;
+        }
+
+        .looper-controls {
+            background-color: #f8f9fa;
+            min-height: 50px;
+            padding: 8px;
+        }
+
+        /* Additional responsive styles */
+        #preload-wrapper {
+            min-width: 640px;
+            max-width: {{MAX_WIDTH}}px;
+            margin: 0 auto;
+        }
+        
+        .looper-wrap {
+            max-width: 100%;
+        }
+        
+        .img-responsive {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        /* Ensure proper layout */
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+        }
+        
+        .container-fluid {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        /* Header for generated loops */
+        .loop-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 20px;
+            margin-bottom: 0;
+        }
+        
+        .loop-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        
+        .loop-content {
+            padding: 0;
+        }
+
+        /* Control symbols */
+        .play::after { content: "▶"; }
+        .pause::after { content = "⏸"; }
+        .reset::after { content: "⏹"; }
+        .prev::after { content: "⏮"; }
+        .next::after { content: "⏭"; }
+        .slower::after { content: "−"; }
+        .faster::after { content: "+"; }
+    </style>
+    
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    
+    <!-- Looper Script -->
+    <script type="text/javascript">
+        // DATA LOOPER 2.O - Embedded Version
+        
+        // ADD DOCUMENT TITLE IF NOT PRESENT
+        $(function() {
+            var looperTitle = $('img').first().attr('alt');
+            
+            // If no title
+            if (document.title === '') {
+                $('title').append(looperTitle);
+            }
+            // If title = Data Looper
+            else if (document.title === 'Data Looper') {
+                $('title').replaceWith('<title>' +looperTitle+ '</title>');
+            };
+        });
+
+        // DATA LOOPER 2.0 function
+        (function($) {
+            $.fn.looper = function(options) {
+                var defaults = {
+                    speed: 100,
+                    pause: 1000,
+                    transition: 'crossfade',
+                    navigation: true,
+                    slide_reset: true,
+                    slide_captions: false,
+                    slide_counter: true,
+                    speed_controls: true,
+                    forward_backward: true,
+                    autoplay: true
+                };
+                
+                options = $.extend(defaults, options);
+                
+                if (options.pause <= options.speed) options.pause = options.speed + 100;
+
+                return this.each(function() {
+                    var $this = $(this);
+                    var $interval = '';
+                    var $curr_pause = options.pause;
+                    
+                    $this.wrap('<div class="looper-wrap" />');
+                    
+                    var $paused = '';
+                    if (options.autoplay === true) {
+                        $paused = false;
+                    } else {
+                        $paused = true;
+                    }
+                    
+                    $this.css({
+                        'position': 'relative',
+                        'width': 'auto',
+                        'height': '100%'
+                    });
+
+                    if (options.transition === 'crossfade') {
+                        var $images = $this.children('img');
+                        
+                        for (var i = 0; i<$images.length; i++){
+                            $images[i].setAttribute('id', i+1);
+                        }
+                        
+                        $this.children().css({
+                            'position': 'absolute'
+                        });
+                        
+                        $this.children(':first').appendTo($this).show();
+                        
+                        if (options.navigation === true) {
+                            createNavigation();
+
+                            var $nav = $this.siblings('.navigation');
+                            
+                            $nav.children('.nav_right').children('.pauseplay').click(function() {
+                                if ($paused === false) {
+                                    stopIt();  
+                                } else {
+                                    moveIt();
+                                }
+                            });
+                            
+                            $nav.children('.nav_right').children('.next').click(function() {
+                                stopIt();
+                                forward();
+                            });
+                            
+                            $nav.children('.nav_right').children('.prev').click(function() {
+                                stopIt();
+                                backward();
+                            });
+                            
+                            $nav.children('.nav_right').children('.reset').click(function() {
+                                stopIt();
+                                resetSlides();
+                            });
+                        
+                            var $slower = $nav.children('.nav_right').children('.speed').children('.slower');
+                            var $faster = $nav.children('.nav_right').children('.speed').children('.faster');
+                            $slower.click(function() {
+                                if ($curr_pause < 2000) {
+                                    clearInterval($interval);
+                                    $curr_pause = $curr_pause * 1.5;
+                                    moveIt();
+                                }
+                            });
+                            $faster.click(function() {
+                                if ($curr_pause > 100) {
+                                    clearInterval($interval);
+                                    $curr_pause = $curr_pause / 1.5;
+                                    moveIt();
+                                }
+                            });
+                        }
+                        
+                        if (options.autoplay === false) {
+                            stopIt();
+                        } else {
+                            $interval = setInterval(function() {
+                                forward();
+                            }, options.pause);
+                        }
+                    }
+                    
+                    function stopIt() {
+                        $this.siblings('.navigation').children('.nav_right').children('.pauseplay')
+                            .removeClass('pause').addClass('play');
+                        clearInterval($interval);
+                        $paused = true;
+                    }
+                    
+                    function moveIt() {
+                        $this.siblings('.navigation').children('.nav_right').children('.pauseplay')
+                            .removeClass('play').addClass('pause');
+                        $interval = setInterval(function() {
+                            forward();
+                        }, $curr_pause);
+                        $paused = false;
+                    }
+                    
+                    function forward() {
+                        var $curr_first = $this.children(':first');
+                        $curr_first.hide().appendTo($this).fadeIn(options.speed);
+                        if (options.navigation === true) {
+                            fetchSlideNumber();
+                        }
+                    }
+
+                    function backward() {
+                        var $curr_last = $this.children(':last');
+                        $curr_last.fadeOut(options.speed, function(){
+                            $curr_last.show().prependTo($this);
+                            if (options.navigation === true && options.slide_counter === true) {
+                                fetchSlideNumber();
+                            }
+                        });
+                    }
+                    
+                    function resetSlides() {
+                        var $collectedSlides = new Array();
+                        var $slidesToCollect = $this.children('img');
+                        for (var i = 0; i < $slidesToCollect.length; i++) {
+                            var $curr_slide = $slidesToCollect[i].getAttribute('id');
+                            $collectedSlides[i] = $this.children('#'+(i+1));
+                        }
+                        
+                        for (var x in $collectedSlides) {
+                            $this.append($collectedSlides[x]);
+                        }
+                        
+                        $this.children(':first').appendTo($this).show();
+                        
+                        if (options.navigation === true && options.slide_counter === true) {
+                            fetchSlideNumber();
+                        }
+                    }
+
+                    function fetchSlideNumber(){
+                        var $slideID = $this.children(':last').attr('id');
+                        var $slideNumber = $this.siblings('.navigation').children('.nav_right').children('.counter').children('.slidenumber');
+                        $slideNumber.html($slideID);
+                    }
+                    
+                    function createNavigation() {
+                        var $imageSrc = $this.children('img:last').attr("src");
+                        $this.parent().append('<img src="' + $imageSrc + '" class="img-responsive invisible" />');
+                        $this.parent().append('<div class="navigation looper-controls"></div>');
+                        
+                        var $nav = $this.siblings('.navigation');
+                        $nav.append('<div class="nav_left"></div>');
+                        $nav.append('<div class="nav_right"></div>');
+                        
+                        var $nav_left = $nav.children('.nav_left');
+                        var $nav_right = $nav.children('.nav_right');
+                        
+                        if (options.slide_counter === true) {
+                            $nav_right.append('<span class="counter"><b class="slidenumber"></b>/<b class="totalslides"></b></span>');
+                            $nav_right.children('.counter').children('.slidenumber').html(1);
+                            $nav_right.children('.counter').children('.totalslides').html($this.children('img').length);
+                        }
+                        
+                        if (options.slide_reset === true) {
+                            $nav_right.append('<a href="#" class="reset" title="Stop/Reset"></a>');
+                        }
+                        
+                        $nav_right.append('<a href="#" class="pauseplay pause" title="Play/Pause"></a>');
+                        
+                        if (options.forward_backward === true) {
+                            $nav_right.append('<a href="#" class="prev" title="Previous"></a>');
+                            $nav_right.append('<a href="#" class="next" title="Next"></a>');
+                        }
+                        
+                        if (options.speed_controls === true) {
+                            $nav_right.append('<span class="speed"><a href="#" class="slower" title="Slower"></a><a href="#" class="faster" title="Faster"></a></span>');
+                        }
+                    }
+                    
+                    $('.looper-wrap').each(function() {
+                        var screenImage = $(this).children('.looper').children('img').last();
+                        var theImage = new Image();
+                        theImage.src = screenImage.attr("src");
+                        var imageWidth = theImage.width;
+                        var loopMinWidth = 640;
+                        
+                        if (imageWidth === 0){
+                            $('#preload-wrapper').css('min-width', loopMinWidth).css('max-width', {{MAX_WIDTH}});
+                        } else {
+                            $('#preload-wrapper').css('max-width', imageWidth);
+                        }
+                    });
+                }); 
+            };
+        })(jQuery);
+    </script>
+    
+    <!-- Initialize Looper -->
+    <script type="text/javascript">
+        var loopMaxWidth = {{MAX_WIDTH}};
+        $(document).ready(function () {
+            $(".looper").looper({{LOOPER_CONFIG}});
+        });
+    </script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="loop-header">
+            <h1>{{TITLE}}</h1>
+            <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 16px;">{{IMAGE_COUNT}} images • Created by Data Loop Builder</p>
+        </div>
+        
+        <div class="loop-content">
+            <div id="preload-wrapper" class="container-fluid">
+                <div class="looper-wrap">
+                    <div class="looper">
+{{IMAGE_ELEMENTS}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

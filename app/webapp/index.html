@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Loop Builder - Web App</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/looper.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <header class="row bg-primary text-white py-3 mb-4">
+            <div class="col">
+                <h1 class="h3 mb-0">
+                    <span class="glyphicon glyphicon-film mr-2"></span>
+                    Data Loop Builder
+                </h1>
+                <p class="mb-0 small">Create interactive image loops from your data sequences</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="row">
+            <!-- Input Section -->
+            <section class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">
+                            <span class="glyphicon glyphicon-folder-open mr-2"></span>
+                            Select Image Directories
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Drag and Drop Area -->
+                        <div id="dropZone" class="drop-zone text-center p-5 mb-3">
+                            <div class="drop-zone-content">
+                                <span class="glyphicon glyphicon-cloud-upload display-4 text-muted mb-3"></span>
+                                <h3 class="h5 text-muted">Drag & Drop Folders Here</h3>
+                                <p class="text-muted mb-3">
+                                    Drop folders containing image sequences, or click to select
+                                </p>
+                                <button type="button" class="btn btn-primary" id="selectFolderBtn">
+                                    <span class="glyphicon glyphicon-folder-open mr-1"></span>
+                                    Select Folders
+                                </button>
+                                <input type="file" id="folderInput" webkitdirectory multiple hidden>
+                            </div>
+                        </div>
+
+                        <!-- Selected Folders List -->
+                        <div id="selectedFolders" class="selected-folders" style="display: none;">
+                            <h4 class="h6 mb-3">Selected Folders:</h4>
+                            <div id="foldersList" class="folders-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Processing Status -->
+                <div id="processingSection" class="card mb-4" style="display: none;">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">
+                            <span class="glyphicon glyphicon-cog mr-2"></span>
+                            Processing Status
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="overallProgress" class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Overall Progress</span>
+                                <span id="progressText" class="text-muted">0%</span>
+                            </div>
+                            <div class="progress">
+                                <div id="progressBar" class="progress-bar" role="progressbar" aria-label="Processing progress" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div id="currentTask" class="text-muted small"></div>
+                        <div id="processingLog" class="processing-log mt-3"></div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div id="resultsSection" class="card" style="display: none;">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">
+                            <span class="glyphicon glyphicon-ok mr-2"></span>
+                            Results
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultsList" class="results-list"></div>
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-success" id="downloadAllBtn">
+                                <span class="glyphicon glyphicon-download mr-1"></span>
+                                Download All Loop Files
+                            </button>
+                            <button type="button" class="btn btn-secondary ml-2" id="resetBtn">
+                                <span class="glyphicon glyphicon-refresh mr-1"></span>
+                                Start Over
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Configuration Panel -->
+            <aside class="col-lg-4">
+                <div class="card sticky-top">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">
+                            <span class="glyphicon glyphicon-cog mr-2"></span>
+                            Loop Configuration
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="configForm">
+                            <!-- Image Filters -->
+                            <div class="form-group">
+                                <label for="imageTypes">Image File Types:</label>
+                                <div id="imageTypes">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" value="jpg" checked> JPG/JPEG
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" value="png" checked> PNG
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" value="gif" checked> GIF
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" value="webp"> WebP
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Exclude Files -->
+                            <div class="form-group">
+                                <label for="excludeFiles">Exclude Files (comma-separated):</label>
+                                <input type="text" class="form-control" id="excludeFiles" 
+                                       value="CONUS.jpg, Texas.jpg, NH.jpg" 
+                                       placeholder="e.g., overview.png, thumbnail.jpg">
+                                <small class="form-text text-muted">Files matching these names will be excluded</small>
+                            </div>
+
+                            <!-- Loop Settings -->
+                            <h4 class="h6 mt-4 mb-3">Loop Settings</h4>
+                            
+                            <div class="form-group">
+                                <label for="autoplay">
+                                    <input type="checkbox" id="autoplay" checked> Auto-play loops
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="showNavigation">
+                                    <input type="checkbox" id="showNavigation" checked> Show navigation controls
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="showCounter">
+                                    <input type="checkbox" id="showCounter" checked> Show frame counter
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="showSpeedControls">
+                                    <input type="checkbox" id="showSpeedControls" checked> Show speed controls
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="showStepControls">
+                                    <input type="checkbox" id="showStepControls" checked> Show step controls
+                                </label>
+                            </div>
+
+                            <!-- Generate Button -->
+                            <button type="button" class="btn btn-success btn-block mt-4" id="generateBtn" disabled>
+                                <span class="glyphicon glyphicon-play mr-1"></span>
+                                Generate Image Loops
+                            </button>
+                        </form>
+
+                        <!-- Preview Section -->
+                        <div id="previewSection" class="mt-4" style="display: none;">
+                            <h4 class="h6 mb-3">Preview</h4>
+                            <div id="previewContainer" class="preview-container">
+                                <!-- Preview content will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jszip.min.js"></script>
+    <script src="js/looper.js"></script>
+    <script src="js/imageProcessor.js"></script>
+    <script src="js/htmlGenerator.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
