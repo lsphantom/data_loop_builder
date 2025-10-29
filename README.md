@@ -8,6 +8,57 @@ A tool for automatically generating interactive HTML image loops from directorie
 
 Data Loop Builder is a shell script (`loopBuilder.csh`) that processes directories containing image sequences and generates interactive HTML files with a customizable image looper interface. Each generated HTML file includes navigation controls for play/pause, speed adjustment, stepping through frames, and resetting to the beginning.
 
+## Quick Start - Web Application
+
+The fastest way to get started is with the web application:
+
+### Prerequisites
+- **Python 3**: For running the local web server
+- **Modern Web Browser**: Chrome, Firefox, Safari, or Edge
+
+### Running the Web App
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/lsphantom/data_loop_builder.git
+   cd data_loop_builder
+   ```
+
+2. **Start the web server**:
+   ```bash
+   cd app/webapp
+   python3 -m http.server 8080
+   ```
+   
+   The server will start and display:
+   ```
+   Serving HTTP on :: port 8080 (http://[::]:8080/) ...
+   ```
+
+3. **Open in your browser**:
+   Navigate to **http://localhost:8080**
+
+4. **Create your loops**:
+   - Drag and drop folders containing images onto the upload area
+   - Configure settings in the right panel (navigation controls, autoplay, etc.)
+   - Click "Generate Image Loops"
+   - Preview loops by clicking the "Preview" button
+   - Download individual loops or batch download all as a ZIP
+
+### Using Different Ports
+
+If port 8080 is already in use, you can specify a different port:
+
+```bash
+python3 -m http.server 8000  # or any available port
+```
+
+Then navigate to `http://localhost:8000`
+
+### Stopping the Server
+
+To stop the web server, press `Ctrl+C` in the terminal where it's running.
+
 ## Features
 
 ### Web Application Features
@@ -65,23 +116,17 @@ Data Loop Builder is a shell script (`loopBuilder.csh`) that processes directori
 
 ## Usage
 
-### Web Application (Recommended)
+### Web Application
 
-The easiest way to use Data Loop Builder is through the web application:
+For detailed usage of the web application, see the [Quick Start](#quick-start---web-application) section above.
 
-1. **Start the Web App**:
-   ```bash
-   cd app/webapp
-   python3 -m http.server 8080
-   ```
-
-2. **Open in Browser**: Navigate to `http://localhost:8080`
-
-3. **Create Loops**:
-   - Drag and drop folders containing image sequences onto the drop zone
-   - Configure loop settings in the right panel
-   - Click "Generate Image Loops"
-   - Preview and download your interactive loops
+The web app provides a modern interface with:
+- Drag & drop folder upload
+- Real-time processing with progress tracking
+- Batch processing for multiple folders
+- Live preview functionality
+- Configurable loop settings
+- Individual and batch download options
 
 ### Command Line (Original Script)
 
@@ -129,6 +174,24 @@ Your input directory should be organized like this:
 After running the script, each subdirectory will contain:
 - `index.htm` - The interactive loop viewer
 - `src/` - Directory with required CSS, JS, and assets (copied from main project)
+
+### Web App Output Structure
+
+The web application generates a cleaner folder structure for each loop:
+
+```
+loop_name/
+├── index.htm           # Main HTML file
+├── image_001.jpg       # Images at root level
+├── image_002.jpg
+├── image_003.jpg
+└── src/                # Source files folder
+    ├── styles.css      # Loop styling
+    ├── jquery.min.js   # jQuery library
+    └── looper.js       # Animation script
+```
+
+This structure makes it easy to edit the HTML, CSS, or JavaScript files while keeping images easily accessible.
 
 ## Controls
 
