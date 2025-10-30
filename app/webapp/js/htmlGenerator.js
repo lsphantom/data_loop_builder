@@ -31,7 +31,7 @@ class HTMLGenerator {
         // Generate index.htm with external references
         folderStructure.files['index.htm'] = {
             type: 'text/html',
-            content: this.generateHTMLWithExternalFiles(title, images, looperConfig, width)
+            content: this.generateHTMLWithExternalFiles(title, images, looperConfig, width, config)
         };
 
         // Create src folder for source files
@@ -72,16 +72,35 @@ class HTMLGenerator {
             };
         }
 
+        // Add overlay file if enabled
+        if (config && config.enableOverlay && config.overlayDataUrl) {
+            folderStructure.files['overlay.png'] = {
+                type: 'image/png',
+                content: config.overlayDataUrl,
+                originalName: config.overlayFile ? config.overlayFile.name : 'overlay.png'
+            };
+        }
+
         return folderStructure;
     }
 
-    static generateHTMLWithExternalFiles(title, images, looperConfig, width) {
+    static generateHTMLWithExternalFiles(title, images, looperConfig, width, config) {
         // Generate image elements with external file references (images at root)
         const imageElements = images.map((image, index) => {
             const extension = this.getImageExtension(image.name);
             const filename = `image_${String(index + 1).padStart(3, '0')}.${extension}`;
             return `        <img src="${filename}" alt="${image.alt}" class="img-responsive">`;
         }).join('\n');
+
+        // Generate overlay if enabled
+        let overlayHTML = '';
+        if (config && config.enableOverlay && config.overlayDataUrl) {
+            const overlayClass = `overlay-${config.overlayPosition || 'bottom-right'}`;
+            overlayHTML = `
+                    <div class="overlay-container">
+                        <img src="overlay.png" alt="Overlay" class="overlay-image ${overlayClass}">
+                    </div>`;
+        }
 
         return `<!doctype html>
 <html lang="en">
@@ -104,7 +123,7 @@ class HTMLGenerator {
                 <div class="looper-wrap">
                     <div class="looper">
 ${imageElements}
-                    </div>
+                    </div>${overlayHTML}
                 </div>
             </div>
         </div>
@@ -220,7 +239,47 @@ body {
 .next::after { content: "⏭"; }
 .slower::after { content: "−"; }
 .faster::after { content: "+"; }
-.invisible { visibility: hidden; }`;
+.invisible { visibility: hidden; }
+
+/* Overlay Styles */
+.overlay-container {
+    position: relative;
+    display: inline-block;
+}
+
+.overlay-image {
+    position: absolute;
+    z-index: 10;
+    pointer-events: none;
+    max-width: 200px;
+    max-height: 200px;
+}
+
+.overlay-top-left {
+    top: 10px;
+    left: 10px;
+}
+
+.overlay-top-right {
+    top: 10px;
+    right: 10px;
+}
+
+.overlay-bottom-left {
+    bottom: 10px;
+    left: 10px;
+}
+
+.overlay-bottom-right {
+    bottom: 10px;
+    right: 10px;
+}
+
+.overlay-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}`;
     }
 
     static getImageExtension(filename) {

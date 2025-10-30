@@ -325,6 +325,44 @@ header {
     transition: all 0.2s ease;
 }
 
+/* Overlay Styles */
+.overlay-container {
+    position: relative;
+    display: inline-block;
+}
+
+.overlay-image {
+    position: absolute;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.overlay-top-left {
+    top: 10px;
+    left: 10px;
+}
+
+.overlay-top-right {
+    top: 10px;
+    right: 10px;
+}
+
+.overlay-bottom-left {
+    bottom: 10px;
+    left: 10px;
+}
+
+.overlay-bottom-right {
+    bottom: 10px;
+    right: 10px;
+}
+
+.overlay-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
 .btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);

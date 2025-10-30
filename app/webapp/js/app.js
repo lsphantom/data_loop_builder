@@ -56,6 +56,10 @@ class LoopBuilderApp {
         // Configuration events
         $('#configForm input').on('change', () => this.updateConfig());
         
+        // Overlay events
+        $('#enableOverlay').on('change', () => this.toggleOverlayOptions());
+        $('#overlayFile').on('change', (e) => this.handleOverlayUpload(e));
+        
         // Action buttons
         $('#generateBtn').on('click', () => this.generateLoops());
         $('#downloadAllBtn').on('click', () => this.downloadAll());
@@ -259,6 +263,50 @@ class LoopBuilderApp {
         this.config.showCounter = $('#showCounter').is(':checked');
         this.config.showSpeedControls = $('#showSpeedControls').is(':checked');
         this.config.showStepControls = $('#showStepControls').is(':checked');
+        
+        // Overlay settings
+        this.config.enableOverlay = $('#enableOverlay').is(':checked');
+        this.config.overlayPosition = $('#overlayPosition').val();
+    }
+
+    toggleOverlayOptions() {
+        const enabled = $('#enableOverlay').is(':checked');
+        $('#overlayUploadGroup').toggle(enabled);
+        $('#overlayPositionGroup').toggle(enabled);
+        this.updateConfig();
+    }
+
+    handleOverlayUpload(event) {
+        const file = event.target.files[0];
+        if (!file) {
+            $('#overlayPreview').hide();
+            this.config.overlayFile = null;
+            this.config.overlayDataUrl = null;
+            return;
+        }
+
+        // Validate file type
+        if (!file.type.startsWith('image/png')) {
+            this.showToast('Please select a PNG file for the overlay', 'warning');
+            event.target.value = '';
+            return;
+        }
+
+        // Read file and create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const dataUrl = e.target.result;
+            this.config.overlayFile = file;
+            this.config.overlayDataUrl = dataUrl;
+            
+            // Show preview
+            $('#overlayPreviewImg').attr('src', dataUrl);
+            $('#overlayInfo').text(`${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+            $('#overlayPreview').show();
+            
+            this.showToast('Overlay image loaded successfully', 'success');
+        };
+        reader.readAsDataURL(file);
     }
 
     updateGenerateButton() {
@@ -430,6 +478,17 @@ class LoopBuilderApp {
             `        <img src="${img.src}" alt="${img.name}" class="img-responsive">`
         ).join('\n');
         
+        // Generate overlay if enabled
+        let overlayHTML = '';
+        if (folderStructure.files['overlay.png']) {
+            const overlayData = folderStructure.files['overlay.png'].content;
+            const overlayClass = `overlay-${config.overlayPosition || 'bottom-right'}`;
+            overlayHTML = `
+                    <div class="overlay-container">
+                        <img src="${overlayData}" alt="Overlay" class="overlay-image ${overlayClass}">
+                    </div>`;
+        }
+        
         // Create self-contained HTML
         return `<!doctype html>
 <html lang="en">
@@ -447,7 +506,7 @@ ${cssContent}
                 <div class="looper-wrap">
                     <div class="looper">
 ${imageElements}
-                    </div>
+                    </div>${overlayHTML}
                 </div>
             </div>
         </div>
