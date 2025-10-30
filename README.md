@@ -3,10 +3,60 @@ Created by Bryan Guarente (The COMET Program / UCAR), adaptation and webapp buil
 
 A tool for automatically generating interactive HTML image loops from directories of images. Perfect for creating animated sequences from scientific data, weather imagery, time-lapse sequences, and other image series.
 
+Available in multiple versions to suit different workflows and technical requirements.
+
+## 📁 Project Structure
+
+```
+data_loop_builder/
+├── README.md                    # This file
+├── app/
+│   ├── cshell/                 # Original tcsh shell script version
+│   │   ├── loopBuilder.csh     # Main shell script
+│   │   └── src/                # Required CSS, JS, and assets
+│   ├── webapp/                 # Modern web application version
+│   │   ├── index.html          # Web interface
+│   │   ├── js/                 # JavaScript modules
+│   │   ├── css/                # Stylesheets
+│   │   └── README.md           # Web app specific documentation
+│   └── desktop/                # Future desktop application (planned)
+│       └── DESKTOP_DEVELOPMENT_PLAN.md
+└── test_data/                  # Sample images for testing
+```
+
+## 🚀 Available Versions
+
+### 1. Web Application (Recommended)
+**Location:** `app/webapp/`  
+**Best for:** Most users, modern workflow, batch processing
+
+- **Drag & Drop Interface**: Upload multiple folders at once
+- **Automatic Overlay Detection**: Smart detection of PNG/GIF overlays
+- **Real-time Processing**: Live progress tracking and preview
+- **Clean Output**: Professional folder structures with separate assets
+- **No Dependencies**: Runs in any modern web browser
+
+### 2. Command Line (Original)
+**Location:** `app/cshell/`  
+**Best for:** Automation, scripting, legacy workflows
+
+- **Shell Script**: Original tcsh implementation
+- **ImageMagick Integration**: Uses system ImageMagick for processing
+- **Batch Processing**: Process entire directory trees
+- **Stable & Proven**: Battle-tested in production environments
+
+### 3. Desktop Application (Coming Soon)
+**Location:** `app/desktop/`  
+**Best for:** Power users, offline processing, system integration
+
+- **Native Performance**: Electron-based desktop application
+- **File System Integration**: Deep folder browsing and file associations
+- **Advanced Features**: Batch queuing, progress tracking, system notifications
+- **Cross-Platform**: Windows, macOS, and Linux support
 
 ## Overview
 
-Data Loop Builder is a shell script (`loopBuilder.csh`) that processes directories containing image sequences and generates interactive HTML files with a customizable image looper interface. Each generated HTML file includes navigation controls for play/pause, speed adjustment, stepping through frames, and resetting to the beginning.
+This project provides multiple ways to create interactive HTML image loops from image sequences. Choose the version that best fits your workflow and technical requirements.
 
 ## Quick Start - Web Application
 
@@ -89,20 +139,28 @@ To stop the web server, press `Ctrl+C` in the terminal where it's running.
 - **ImageMagick**: Required for image dimension detection (`identify` command)
 - **Web browser**: For viewing the generated HTML loops
 
-## Installation
+## Installation & Setup
 
-1. Clone this repository:
+### For Web Application (Recommended)
+
+1. **Clone the repository**:
    ```bash
    git clone https://github.com/lsphantom/data_loop_builder.git
    cd data_loop_builder
    ```
 
-2. Make the script executable:
+2. **No additional installation required** - runs in web browser
+
+### For Command Line Version
+
+1. **Clone the repository** (same as above)
+
+2. **Make the script executable**:
    ```bash
-   chmod +x loopBuilder.csh
+   chmod +x app/cshell/loopBuilder.csh
    ```
 
-3. Ensure ImageMagick is installed:
+3. **Install ImageMagick**:
    ```bash
    # On macOS with Homebrew
    brew install imagemagick
@@ -116,7 +174,47 @@ To stop the web server, press `Ctrl+C` in the terminal where it's running.
 
 ## Usage
 
-### Web Application
+### Web Application (Recommended)
+
+1. **Start the web server**:
+   ```bash
+   cd app/webapp
+   python3 -m http.server 8080
+   ```
+
+2. **Open in browser**: Navigate to **http://localhost:8080**
+
+3. **Create loops**:
+   - Drag and drop folders containing images onto the upload area
+   - Configure settings (exclude files, autoplay)
+   - Click "Generate Image Loops"
+   - Preview loops and download individual or batch files
+
+### Command Line Version
+
+### Command Line Version
+
+#### Basic Syntax
+
+```bash
+./app/cshell/loopBuilder.csh <path_to_parent_directory> <image_extension>
+```
+
+#### Parameters
+
+- `path_to_parent_directory`: Path to the directory containing subdirectories with image sequences
+- `image_extension`: File extension of images to process (e.g., `png`, `jpg`, `gif`)
+
+#### Example
+
+```bash
+./app/cshell/loopBuilder.csh /path/to/weather/data png
+```
+
+This command will:
+1. Look for subdirectories in `/path/to/weather/data`
+2. Find all `.png` files in each subdirectory
+3. Generate an `index.htm` file in each subdirectory with an interactive image loop
 
 For detailed usage of the web application, see the [Quick Start](#quick-start---web-application) section above.
 
@@ -130,29 +228,7 @@ The web app provides a modern interface with:
 
 ### Command Line (Original Script)
 
-### Basic Syntax
-
-```bash
-./loopBuilder.csh <path_to_parent_directory> <image_extension>
-```
-
-### Parameters
-
-- `path_to_parent_directory`: Path to the directory containing subdirectories with image sequences
-- `image_extension`: File extension of images to process (e.g., `png`, `jpg`, `gif`)
-
-### Example
-
-```bash
-./loopBuilder.csh /path/to/weather/data png
-```
-
-This command will:
-1. Look for subdirectories in `/path/to/weather/data`
-2. Find all `.png` files in each subdirectory
-3. Generate an `index.htm` file in each subdirectory with an interactive image loop
-
-### Directory Structure
+#### Directory Structure
 
 Your input directory should be organized like this:
 
@@ -173,9 +249,9 @@ Your input directory should be organized like this:
 
 After running the script, each subdirectory will contain:
 - `index.htm` - The interactive loop viewer
-- `src/` - Directory with required CSS, JS, and assets (copied from main project)
+- `src/` - Directory with required CSS, JS, and assets (copied from `app/cshell/src/`)
 
-### Web App Output Structure
+#### Web App Output Structure
 
 The web application generates a cleaner folder structure for each loop:
 
@@ -185,6 +261,7 @@ loop_name/
 ├── image_001.jpg       # Images at root level
 ├── image_002.jpg
 ├── image_003.jpg
+├── overlay.png         # Overlay file (if detected)
 └── src/                # Source files folder
     ├── styles.css      # Loop styling
     ├── jquery.min.js   # jQuery library
@@ -192,6 +269,22 @@ loop_name/
 ```
 
 This structure makes it easy to edit the HTML, CSS, or JavaScript files while keeping images easily accessible.
+
+## 🎯 Key Features by Version
+
+### Web Application Features
+- **Automatic Overlay Detection**: If a folder contains multiple JPG images + 1 PNG image, the PNG is automatically treated as an overlay
+- **Interactive Overlay Toggle**: Generated loops include a toggle button to show/hide overlays
+- **Batch Processing**: Process multiple folders simultaneously
+- **Live Preview**: Preview loops before downloading
+- **Modern UI**: Responsive interface with drag-and-drop
+- **Smart File Handling**: Automatically detects and processes all supported image formats
+
+### Command Line Features
+- **Scripting Integration**: Perfect for automated workflows
+- **ImageMagick Integration**: Leverages system ImageMagick for robust image processing
+- **Legacy Support**: Compatible with older systems and workflows
+- **Direct File Processing**: Works directly with file system without browser limitations
 
 ## Controls
 
