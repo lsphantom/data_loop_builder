@@ -5,27 +5,41 @@
 
 class ImageProcessor {
     static async processFolder(folder, config) {
-        const imageFiles = folder.files.filter(file => 
+        const allImageFiles = folder.files.filter(file => 
             this.isValidImageFile(file, config)
         );
 
-        if (imageFiles.length === 0) {
+        if (allImageFiles.length === 0) {
             throw new Error(`No valid image files found in folder: ${folder.name}`);
         }
 
-        // Sort images by filename for consistent ordering
-        imageFiles.sort((a, b) => {
+        // Separate loop images from potential overlays
+        const imageAnalysis = this.analyzeImagesForOverlay(allImageFiles);
+        const { loopImages, overlayImage } = imageAnalysis;
+
+        if (loopImages.length === 0) {
+            throw new Error(`No valid loop images found in folder: ${folder.name}`);
+        }
+
+        // Sort loop images by filename for consistent ordering
+        loopImages.sort((a, b) => {
             const aName = this.getFileName(a);
             const bName = this.getFileName(b);
             return aName.localeCompare(bName, undefined, { numeric: true });
         });
 
-        // Process each image and create data URLs
+        // Process each loop image and create data URLs
         const processedImages = [];
-        for (let i = 0; i < imageFiles.length; i++) {
-            const file = imageFiles[i];
+        for (let i = 0; i < loopImages.length; i++) {
+            const file = loopImages[i];
             const processedImage = await this.processImage(file, i + 1);
             processedImages.push(processedImage);
+        }
+
+        // Process overlay image if found
+        let processedOverlay = null;
+        if (overlayImage) {
+            processedOverlay = await this.processImage(overlayImage, 'overlay');
         }
 
         // Get dimensions from the first image for responsive layout
@@ -34,10 +48,57 @@ class ImageProcessor {
         
         return {
             images: processedImages,
+            overlay: processedOverlay,
             totalCount: processedImages.length,
             dimensions: dimensions,
-            folderName: folder.name
+            folderName: folder.name,
+            hasOverlay: !!processedOverlay
         };
+    }
+
+    static analyzeImagesForOverlay(allImageFiles) {
+        // Group images by extension
+        const imagesByType = {
+            png: [],
+            jpg: [],
+            jpeg: [],
+            gif: [],
+            webp: []
+        };
+
+        allImageFiles.forEach(file => {
+            const extension = this.getFileExtension(this.getFileName(file));
+            if (imagesByType[extension]) {
+                imagesByType[extension].push(file);
+            }
+        });
+
+        // Combine jpg and jpeg
+        const jpgImages = [...imagesByType.jpg, ...imagesByType.jpeg];
+        const pngImages = imagesByType.png;
+        const gifImages = imagesByType.gif;
+        const webpImages = imagesByType.webp;
+
+        let loopImages = [];
+        let overlayImage = null;
+
+        // Overlay detection logic:
+        // If there's exactly 1 PNG and multiple other images, treat PNG as overlay
+        if (pngImages.length === 1 && (jpgImages.length > 1 || gifImages.length > 1 || webpImages.length > 1)) {
+            overlayImage = pngImages[0];
+            loopImages = [...jpgImages, ...gifImages, ...webpImages];
+        }
+        // If there's exactly 1 GIF and multiple JPGs, treat GIF as overlay
+        else if (gifImages.length === 1 && jpgImages.length > 1) {
+            overlayImage = gifImages[0];
+            loopImages = jpgImages;
+        }
+        // Otherwise, use all images for the loop
+        else {
+            loopImages = allImageFiles;
+        }
+
+        return { loopImages, overlayImage };
     }
 
     static isValidImageFile(file, config) {

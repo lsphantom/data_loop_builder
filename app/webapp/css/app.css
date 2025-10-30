@@ -326,41 +326,54 @@ header {
 }
 
 /* Overlay Styles */
-.overlay-container {
+.looper-container {
     position: relative;
     display: inline-block;
 }
 
 .overlay-image {
     position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     z-index: 10;
     pointer-events: none;
+    object-fit: contain;
 }
 
-.overlay-top-left {
+/* Overlay Toggle Controls */
+.overlay-controls {
+    position: absolute;
     top: 10px;
     left: 10px;
+    z-index: 20;
 }
 
-.overlay-top-right {
-    top: 10px;
-    right: 10px;
+.overlay-toggle {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.overlay-bottom-left {
-    bottom: 10px;
-    left: 10px;
+.overlay-toggle:hover {
+    background: rgba(248, 249, 250, 0.95);
+    border-color: #007bff;
 }
 
-.overlay-bottom-right {
-    bottom: 10px;
-    right: 10px;
+.overlay-toggle.active {
+    background: rgba(0, 123, 255, 0.9);
+    border-color: #007bff;
+    color: white;
 }
 
-.overlay-center {
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+.overlay-toggle .glyphicon {
+    margin-right: 4px;
 }
 
 .btn:hover {

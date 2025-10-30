@@ -118,31 +118,10 @@
                     </div>
                     <div class="card-body">
                         <form id="configForm">
-                            <!-- Image Filters -->
-                            <div class="form-group">
-                                <label for="imageTypes">Image File Types:</label>
-                                <div id="imageTypes">
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" value="jpg" checked> JPG/JPEG
-                                        </label>
-                                    </div>
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" value="png" checked> PNG
-                                        </label>
-                                    </div>
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" value="gif" checked> GIF
-                                        </label>
-                                    </div>
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" value="webp"> WebP
-                                        </label>
-                                    </div>
-                                </div>
+                            <!-- File Support Info -->
+                            <div class="alert alert-info" style="font-size: 13px; padding: 8px 12px; margin-bottom: 20px;">
+                                <strong>Supported formats:</strong> JPG, JPEG, PNG, GIF, WebP<br>
+                                <strong>Overlay detection:</strong> Single PNG/GIF + multiple other images = automatic overlay
                             </div>
 
                             <!-- Exclude Files -->
@@ -151,7 +130,7 @@
                                 <input type="text" class="form-control" id="excludeFiles" 
                                        value="CONUS.jpg, Texas.jpg, NH.jpg" 
                                        placeholder="e.g., overview.png, thumbnail.jpg">
-                                <small class="form-text text-muted">Files matching these names will be excluded</small>
+                                <small class="form-text text-muted">Files matching these names will be excluded from loops</small>
                             </div>
 
                             <!-- Loop Settings -->
@@ -161,64 +140,7 @@
                                 <label for="autoplay">
                                     <input type="checkbox" id="autoplay" checked> Auto-play loops
                                 </label>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="showNavigation">
-                                    <input type="checkbox" id="showNavigation" checked> Show navigation controls
-                                </label>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="showCounter">
-                                    <input type="checkbox" id="showCounter" checked> Show frame counter
-                                </label>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="showSpeedControls">
-                                    <input type="checkbox" id="showSpeedControls" checked> Show speed controls
-                                </label>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="showStepControls">
-                                    <input type="checkbox" id="showStepControls" checked> Show step controls
-                                </label>
-                            </div>
-
-                            <!-- Overlay Settings -->
-                            <h4 class="h6 mt-4 mb-3">Overlay Options</h4>
-                            
-                            <div class="form-group">
-                                <label for="enableOverlay">
-                                    <input type="checkbox" id="enableOverlay"> Add PNG overlay to loops
-                                </label>
-                                <small class="form-text text-muted">Overlay a PNG image (logos, watermarks, etc.) on top of the animation</small>
-                            </div>
-
-                            <div class="form-group" id="overlayUploadGroup" style="display: none;">
-                                <label for="overlayFile">Upload Overlay PNG:</label>
-                                <input type="file" class="form-control-file" id="overlayFile" accept=".png,image/png">
-                                <small class="form-text text-muted">Choose a PNG file with transparency for best results</small>
-                                
-                                <div class="mt-2" id="overlayPreview" style="display: none;">
-                                    <img id="overlayPreviewImg" src="" alt="Overlay preview" style="max-width: 150px; max-height: 150px; border: 1px solid #ddd; border-radius: 4px;">
-                                    <div class="mt-1">
-                                        <small class="text-muted" id="overlayInfo"></small>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group" id="overlayPositionGroup" style="display: none;">
-                                <label for="overlayPosition">Overlay Position:</label>
-                                <select class="form-control" id="overlayPosition">
-                                    <option value="top-left">Top Left</option>
-                                    <option value="top-right">Top Right</option>
-                                    <option value="bottom-left">Bottom Left</option>
-                                    <option value="bottom-right" selected>Bottom Right</option>
-                                    <option value="center">Center</option>
-                                </select>
+                                <small class="form-text text-muted">Automatically start animation when page loads</small>
                             </div>
 
                             <!-- Generate Button -->

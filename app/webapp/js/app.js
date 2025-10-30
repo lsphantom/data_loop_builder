@@ -8,13 +8,13 @@ class LoopBuilderApp {
         this.selectedFolders = new Map();
         this.processedResults = [];
         this.config = {
-            imageTypes: ['jpg', 'jpeg', 'png', 'gif'],
+            imageTypes: ['jpg', 'jpeg', 'png', 'gif', 'webp'], // Accept all supported types
             excludeFiles: ['CONUS.jpg', 'Texas.jpg', 'NH.jpg'],
             autoplay: true,
-            showNavigation: true,
-            showCounter: true,
-            showSpeedControls: true,
-            showStepControls: true
+            showNavigation: true,     // Always enabled
+            showCounter: true,        // Always enabled  
+            showSpeedControls: true,  // Always enabled
+            showStepControls: true    // Always enabled
         };
         
         this.init();
@@ -55,10 +55,6 @@ class LoopBuilderApp {
         
         // Configuration events
         $('#configForm input').on('change', () => this.updateConfig());
-        
-        // Overlay events
-        $('#enableOverlay').on('change', () => this.toggleOverlayOptions());
-        $('#overlayFile').on('change', (e) => this.handleOverlayUpload(e));
         
         // Action buttons
         $('#generateBtn').on('click', () => this.generateLoops());
@@ -243,12 +239,8 @@ class LoopBuilderApp {
     }
 
     updateConfig() {
-        // Image types
-        const selectedTypes = [];
-        $('#imageTypes input:checked').each(function() {
-            selectedTypes.push($(this).val());
-        });
-        this.config.imageTypes = selectedTypes;
+        // Image types are now fixed to support all formats
+        this.config.imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
         // Exclude files
         const excludeText = $('#excludeFiles').val();
@@ -257,56 +249,14 @@ class LoopBuilderApp {
             .map(s => s.trim())
             .filter(s => s.length > 0);
 
-        // Loop settings
+        // Loop settings - only autoplay is configurable now
         this.config.autoplay = $('#autoplay').is(':checked');
-        this.config.showNavigation = $('#showNavigation').is(':checked');
-        this.config.showCounter = $('#showCounter').is(':checked');
-        this.config.showSpeedControls = $('#showSpeedControls').is(':checked');
-        this.config.showStepControls = $('#showStepControls').is(':checked');
         
-        // Overlay settings
-        this.config.enableOverlay = $('#enableOverlay').is(':checked');
-        this.config.overlayPosition = $('#overlayPosition').val();
-    }
-
-    toggleOverlayOptions() {
-        const enabled = $('#enableOverlay').is(':checked');
-        $('#overlayUploadGroup').toggle(enabled);
-        $('#overlayPositionGroup').toggle(enabled);
-        this.updateConfig();
-    }
-
-    handleOverlayUpload(event) {
-        const file = event.target.files[0];
-        if (!file) {
-            $('#overlayPreview').hide();
-            this.config.overlayFile = null;
-            this.config.overlayDataUrl = null;
-            return;
-        }
-
-        // Validate file type
-        if (!file.type.startsWith('image/png')) {
-            this.showToast('Please select a PNG file for the overlay', 'warning');
-            event.target.value = '';
-            return;
-        }
-
-        // Read file and create preview
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const dataUrl = e.target.result;
-            this.config.overlayFile = file;
-            this.config.overlayDataUrl = dataUrl;
-            
-            // Show preview
-            $('#overlayPreviewImg').attr('src', dataUrl);
-            $('#overlayInfo').text(`${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
-            $('#overlayPreview').show();
-            
-            this.showToast('Overlay image loaded successfully', 'success');
-        };
-        reader.readAsDataURL(file);
+        // Navigation controls are always enabled
+        this.config.showNavigation = true;
+        this.config.showCounter = true;
+        this.config.showSpeedControls = true;
+        this.config.showStepControls = true;
     }
 
     updateGenerateButton() {
@@ -401,6 +351,7 @@ class LoopBuilderApp {
         resultsList.empty();
 
         this.processedResults.forEach((result, index) => {
+            const overlayInfo = result.hasOverlay ? ' • <span class="text-success">Overlay detected</span>' : '';
             const resultItem = $(`
                 <div class="result-item">
                     <div class="result-info">
@@ -409,7 +360,7 @@ class LoopBuilderApp {
                             ${result.name}
                         </div>
                         <div class="result-details">
-                            ${result.imageCount} images • HTML folder with external files
+                            ${result.imageCount} images • HTML folder with external files${overlayInfo}
                         </div>
                     </div>
                     <div class="result-actions">
@@ -478,15 +429,21 @@ class LoopBuilderApp {
             `        <img src="${img.src}" alt="${img.name}" class="img-responsive">`
         ).join('\n');
         
-        // Generate overlay if enabled
+        // Generate overlay if present
         let overlayHTML = '';
+        let overlayToggleHTML = '';
         if (folderStructure.files['overlay.png']) {
             const overlayData = folderStructure.files['overlay.png'].content;
-            const overlayClass = `overlay-${config.overlayPosition || 'bottom-right'}`;
             overlayHTML = `
-                    <div class="overlay-container">
-                        <img src="${overlayData}" alt="Overlay" class="overlay-image ${overlayClass}">
-                    </div>`;
+                        <img id="overlayImage" src="${overlayData}" alt="Overlay" class="overlay-image" style="display: none;">`;
+            
+            overlayToggleHTML = `
+                        <div class="overlay-controls">
+                            <button type="button" id="overlayToggle" class="overlay-toggle" title="Toggle Overlay">
+                                <span class="glyphicon glyphicon-eye-close"></span>
+                                <span class="overlay-label">Show</span>
+                            </button>
+                        </div>`;
         }
         
         // Create self-contained HTML
@@ -504,9 +461,11 @@ ${cssContent}
         <div class="loop-content">
             <div id="preload-wrapper">
                 <div class="looper-wrap">
-                    <div class="looper">
+                    <div class="looper-container">
+                        <div class="looper">
 ${imageElements}
-                    </div>${overlayHTML}
+                        </div>${overlayHTML}${overlayToggleHTML}
+                    </div>
                 </div>
             </div>
         </div>
@@ -519,7 +478,27 @@ ${jsContent}
     </script>
     <script>
         $(document).ready(function() { 
-            $(".looper").looper(${this.generateLooperConfig(config)}); 
+            $(".looper").looper(${this.generateLooperConfig(config)});${folderStructure.files['overlay.png'] ? `
+            
+            // Overlay toggle functionality
+            $('#overlayToggle').on('click', function() {
+                const overlay = $('#overlayImage');
+                const button = $(this);
+                const label = button.find('.overlay-label');
+                const icon = button.find('.glyphicon');
+                
+                if (overlay.is(':visible')) {
+                    overlay.hide();
+                    label.text('Show');
+                    icon.removeClass('glyphicon-eye-open').addClass('glyphicon-eye-close');
+                    button.removeClass('active');
+                } else {
+                    overlay.show();
+                    label.text('Hide');
+                    icon.removeClass('glyphicon-eye-close').addClass('glyphicon-eye-open');
+                    button.addClass('active');
+                }
+            });` : ''}
         });
     </script>
 </body>
@@ -529,10 +508,10 @@ ${jsContent}
     getConfigFromResult(result) {
         // Get current configuration from the form
         return {
-            showNavigation: $('#showNavigation').is(':checked'),
-            showCounter: $('#showCounter').is(':checked'),
-            showSpeedControls: $('#showSpeedControls').is(':checked'),
-            showStepControls: $('#showStepControls').is(':checked'),
+            showNavigation: true,     // Always enabled
+            showCounter: true,        // Always enabled
+            showSpeedControls: true,  // Always enabled
+            showStepControls: true,   // Always enabled
             autoplay: $('#autoplay').is(':checked')
         };
     }

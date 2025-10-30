@@ -12,11 +12,12 @@ class HTMLGenerator {
         }
 
         // Create a complete folder structure instead of a single HTML file
-        const folderStructure = await this.generateFolderStructure(folderName, images, dimensions, config);
+        const folderStructure = await this.generateFolderStructure(folderName, processedData, config);
         return folderStructure;
     }
 
-    static async generateFolderStructure(folderName, images, dimensions, config) {
+    static async generateFolderStructure(folderName, processedData, config) {
+        const { images, dimensions } = processedData;
         const title = this.sanitizeTitle(folderName);
         const looperConfig = this.generateLooperConfig(config);
         const width = dimensions.width || 800;
@@ -31,7 +32,7 @@ class HTMLGenerator {
         // Generate index.htm with external references
         folderStructure.files['index.htm'] = {
             type: 'text/html',
-            content: this.generateHTMLWithExternalFiles(title, images, looperConfig, width, config)
+            content: this.generateHTMLWithExternalFiles(title, images, looperConfig, width, processedData.overlay)
         };
 
         // Create src folder for source files
@@ -72,19 +73,19 @@ class HTMLGenerator {
             };
         }
 
-        // Add overlay file if enabled
-        if (config && config.enableOverlay && config.overlayDataUrl) {
+        // Add overlay file if detected
+        if (processedData.overlay) {
             folderStructure.files['overlay.png'] = {
                 type: 'image/png',
-                content: config.overlayDataUrl,
-                originalName: config.overlayFile ? config.overlayFile.name : 'overlay.png'
+                content: processedData.overlay.dataUrl,
+                originalName: processedData.overlay.name
             };
         }
 
         return folderStructure;
     }
 
-    static generateHTMLWithExternalFiles(title, images, looperConfig, width, config) {
+    static generateHTMLWithExternalFiles(title, images, looperConfig, width, overlayData) {
         // Generate image elements with external file references (images at root)
         const imageElements = images.map((image, index) => {
             const extension = this.getImageExtension(image.name);
@@ -92,14 +93,20 @@ class HTMLGenerator {
             return `        <img src="${filename}" alt="${image.alt}" class="img-responsive">`;
         }).join('\n');
 
-        // Generate overlay if enabled
+        // Generate overlay HTML and toggle if overlay exists
         let overlayHTML = '';
-        if (config && config.enableOverlay && config.overlayDataUrl) {
-            const overlayClass = `overlay-${config.overlayPosition || 'bottom-right'}`;
+        let overlayToggleHTML = '';
+        if (overlayData) {
             overlayHTML = `
-                    <div class="overlay-container">
-                        <img src="overlay.png" alt="Overlay" class="overlay-image ${overlayClass}">
-                    </div>`;
+                        <img id="overlayImage" src="overlay.png" alt="Overlay" class="overlay-image" style="display: none;">`;
+            
+            overlayToggleHTML = `
+                        <div class="overlay-controls">
+                            <button type="button" id="overlayToggle" class="overlay-toggle" title="Toggle Overlay">
+                                <span class="glyphicon glyphicon-eye-close"></span>
+                                <span class="overlay-label">Show</span>
+                            </button>
+                        </div>`;
         }
 
         return `<!doctype html>
@@ -112,7 +119,27 @@ class HTMLGenerator {
     <script src="src/looper.js"></script>
     <script>
         $(document).ready(function() { 
-            $(".looper").looper(${looperConfig}); 
+            $(".looper").looper(${looperConfig});${overlayData ? `
+            
+            // Overlay toggle functionality
+            $('#overlayToggle').on('click', function() {
+                const overlay = $('#overlayImage');
+                const button = $(this);
+                const label = button.find('.overlay-label');
+                const icon = button.find('.glyphicon');
+                
+                if (overlay.is(':visible')) {
+                    overlay.hide();
+                    label.text('Show');
+                    icon.removeClass('glyphicon-eye-open').addClass('glyphicon-eye-close');
+                    button.removeClass('active');
+                } else {
+                    overlay.show();
+                    label.text('Hide');
+                    icon.removeClass('glyphicon-eye-close').addClass('glyphicon-eye-open');
+                    button.addClass('active');
+                }
+            });` : ''}
         });
     </script>
 </head>
@@ -121,9 +148,11 @@ class HTMLGenerator {
         <div class="loop-content">
             <div id="preload-wrapper">
                 <div class="looper-wrap">
-                    <div class="looper">
+                    <div class="looper-container">
+                        <div class="looper">
 ${imageElements}
-                    </div>${overlayHTML}
+                        </div>${overlayHTML}${overlayToggleHTML}
+                    </div>
                 </div>
             </div>
         </div>
@@ -242,43 +271,54 @@ body {
 .invisible { visibility: hidden; }
 
 /* Overlay Styles */
-.overlay-container {
+.looper-container {
     position: relative;
     display: inline-block;
 }
 
 .overlay-image {
     position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     z-index: 10;
     pointer-events: none;
-    max-width: 200px;
-    max-height: 200px;
+    object-fit: contain;
 }
 
-.overlay-top-left {
+/* Overlay Toggle Controls */
+.overlay-controls {
+    position: absolute;
     top: 10px;
     left: 10px;
+    z-index: 20;
 }
 
-.overlay-top-right {
-    top: 10px;
-    right: 10px;
+.overlay-toggle {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.overlay-bottom-left {
-    bottom: 10px;
-    left: 10px;
+.overlay-toggle:hover {
+    background: rgba(248, 249, 250, 0.95);
+    border-color: #007bff;
 }
 
-.overlay-bottom-right {
-    bottom: 10px;
-    right: 10px;
+.overlay-toggle.active {
+    background: rgba(0, 123, 255, 0.9);
+    border-color: #007bff;
+    color: white;
 }
 
-.overlay-center {
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+.overlay-toggle .glyphicon {
+    margin-right: 4px;
 }`;
     }
 
