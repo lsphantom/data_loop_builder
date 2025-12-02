@@ -286,6 +286,16 @@ class LoopBuilderApp {
                 const processedImages = await ImageProcessor.processFolder(folder, this.config);
                 const folderStructure = await HTMLGenerator.generateLoop(folder.name, processedImages, this.config);
                 
+                // Debug: log the final filenames in the folder structure
+                console.log(`Folder: ${folder.name}`);
+                console.log('Image filenames in folder structure:');
+                Object.keys(folderStructure.files).forEach(filename => {
+                    const file = folderStructure.files[filename];
+                    if (file.type && file.type.startsWith('image/')) {
+                        console.log(`  ${filename} (original: ${file.originalName})`);
+                    }
+                });
+                
                 this.processedResults.push({
                     name: folder.name,
                     folderStructure: folderStructure,
@@ -322,12 +332,20 @@ class LoopBuilderApp {
 
     updateProgress(current, total, task = '') {
         const percentage = Math.round((current / total) * 100);
-        $('#progressBar').css('width', `${percentage}%`).attr('aria-valuenow', percentage);
+        
+        // Force DOM update and ensure transition works
+        const $progressBar = $('#progressBar');
+        $progressBar.css('width', `${percentage}%`);
+        $progressBar.attr('aria-valuenow', percentage);
+        
         $('#progressText').text(`${percentage}%`);
         
         if (task) {
             $('#currentTask').text(task);
         }
+        
+        // Force a repaint to ensure the progress bar updates visually
+        $progressBar[0].offsetHeight;
     }
 
     addLogEntry(message, type = 'info') {
