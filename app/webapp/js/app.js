@@ -289,7 +289,9 @@ class LoopBuilderApp {
                 this.processedResults.push({
                     name: folder.name,
                     folderStructure: folderStructure,
-                    imageCount: processedImages.images.length
+                    imageCount: processedImages.images.length,
+                    hasOverlay: processedImages.hasOverlay,
+                    overlayFilename: processedImages.overlay ? HTMLGenerator.sanitizeFilename(processedImages.overlay.name) : null
                 });
 
                 this.addLogEntry(`✓ Generated loop for ${folder.name} (${processedImages.images.length} images)`, 'success');
@@ -412,14 +414,17 @@ class LoopBuilderApp {
         const jsContent = folderStructure.files['src'].files['looper.js'].content;
         const jqueryContent = folderStructure.files['src'].files['jquery.min.js'].content;
         
-        // Get image data
+        // Get image data - exclude overlay file if present
         const images = [];
+        const overlayFilename = result.overlayFilename;
+        
         Object.keys(folderStructure.files).forEach(key => {
-            if (key.startsWith('image_') && key !== 'index.htm') {
-                const imageFile = folderStructure.files[key];
+            const file = folderStructure.files[key];
+            if (file.type && file.type.startsWith('image/') && !key.startsWith('src/') && key !== overlayFilename) {
                 images.push({
-                    src: imageFile.content, // data URL
-                    name: key
+                    src: file.content, // data URL
+                    name: key,
+                    originalName: file.originalName
                 });
             }
         });
@@ -432,10 +437,12 @@ class LoopBuilderApp {
         // Generate overlay if present
         let overlayHTML = '';
         let overlayToggleHTML = '';
-        if (folderStructure.files['overlay.png']) {
-            const overlayData = folderStructure.files['overlay.png'].content;
+        let overlayFile = null;
+        
+        if (result.hasOverlay && result.overlayFilename && folderStructure.files[result.overlayFilename]) {
+            overlayFile = folderStructure.files[result.overlayFilename];
             overlayHTML = `
-                        <img id="overlayImage" src="${overlayData}" alt="Overlay" class="overlay-image" style="display: none;">`;
+                        <img id="overlayImage" src="${overlayFile.content}" alt="Overlay" class="overlay-image" style="display: none;">`;
             
             overlayToggleHTML = `
                         <div class="overlay-controls">
@@ -478,7 +485,7 @@ ${jsContent}
     </script>
     <script>
         $(document).ready(function() { 
-            $(".looper").looper(${this.generateLooperConfig(config)});${folderStructure.files['overlay.png'] ? `
+            $(".looper").looper(${this.generateLooperConfig(config)});${overlayFile ? `
             
             // Overlay toggle functionality
             $('#overlayToggle').on('click', function() {

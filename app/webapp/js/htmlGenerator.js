@@ -60,11 +60,11 @@ class HTMLGenerator {
             content: this.generateCSSFile(width)
         };
 
-        // Add image files directly to root folder
+        // Add image files directly to root folder using original filenames
         for (let i = 0; i < images.length; i++) {
             const image = images[i];
+            const filename = this.sanitizeFilename(image.name);
             const extension = this.getImageExtension(image.name);
-            const filename = `image_${String(i + 1).padStart(3, '0')}.${extension}`;
             
             folderStructure.files[filename] = {
                 type: `image/${extension}`,
@@ -73,9 +73,10 @@ class HTMLGenerator {
             };
         }
 
-        // Add overlay file if detected
+        // Add overlay file if detected, preserving original filename
         if (processedData.overlay) {
-            folderStructure.files['overlay.png'] = {
+            const overlayFilename = this.sanitizeFilename(processedData.overlay.name);
+            folderStructure.files[overlayFilename] = {
                 type: 'image/png',
                 content: processedData.overlay.dataUrl,
                 originalName: processedData.overlay.name
@@ -86,10 +87,9 @@ class HTMLGenerator {
     }
 
     static generateHTMLWithExternalFiles(title, images, looperConfig, width, overlayData) {
-        // Generate image elements with external file references (images at root)
+        // Generate image elements with external file references using original filenames
         const imageElements = images.map((image, index) => {
-            const extension = this.getImageExtension(image.name);
-            const filename = `image_${String(index + 1).padStart(3, '0')}.${extension}`;
+            const filename = this.sanitizeFilename(image.name);
             return `        <img src="${filename}" alt="${image.alt}" class="img-responsive">`;
         }).join('\n');
 
@@ -97,8 +97,9 @@ class HTMLGenerator {
         let overlayHTML = '';
         let overlayToggleHTML = '';
         if (overlayData) {
+            const overlayFilename = this.sanitizeFilename(overlayData.name);
             overlayHTML = `
-                        <img id="overlayImage" src="overlay.png" alt="Overlay" class="overlay-image" style="display: none;">`;
+                        <img id="overlayImage" src="${overlayFilename}" alt="Overlay" class="overlay-image" style="display: none;">`;
             
             overlayToggleHTML = `
                         <div class="overlay-controls">
@@ -502,6 +503,14 @@ body {
         return title
             .replace(/[<>:"\/\\|?*]/g, '')
             .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    static sanitizeFilename(filename) {
+        // Preserve original filename but ensure it's safe for file systems
+        return filename
+            .replace(/[<>:"\/\\|?*]/g, '_')
+            .replace(/\s+/g, '_')
             .trim();
     }
 }
