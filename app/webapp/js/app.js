@@ -208,17 +208,17 @@ class LoopBuilderApp {
 
         this.selectedFolders.forEach((folder, folderName) => {
             const folderItem = $(`
-                <div class="folder-item" data-folder="${folderName}">
+                <div class="folder-item rounded-lg border border-gray-200 p-4 bg-white flex justify-between items-center" data-folder="${folderName}">
                     <div>
-                        <div class="folder-name">
+                        <div class="folder-name text-base font-medium text-gray-800">
                             <span class="glyphicon glyphicon-folder-open mr-2"></span>
                             ${folder.name}
                         </div>
-                        <div class="folder-info">
+                        <div class="folder-info text-sm text-gray-500 mt-1 block ml-7">
                             ${folder.imageCount} images found
                         </div>
                     </div>
-                    <span class="folder-remove glyphicon glyphicon-remove" data-folder="${folderName}"></span>
+                    <span class="folder-remove glyphicon glyphicon-remove text-red-600 hover:text-red-800 cursor-pointer" data-folder="${folderName}"></span>
                 </div>
             `);
             
@@ -373,24 +373,24 @@ class LoopBuilderApp {
         this.processedResults.forEach((result, index) => {
             const overlayInfo = result.hasOverlay ? ' • <span class="text-success">Overlay detected</span>' : '';
             const resultItem = $(`
-                <div class="result-item">
-                    <div class="result-info">
-                        <div class="result-name">
+                <div class="result-item rounded-lg border border-gray-200 p-4 bg-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div class="result-info flex-1">
+                        <div class="result-name text-base font-medium text-gray-800 flex items-center">
                             <span class="glyphicon glyphicon-film mr-2"></span>
                             ${result.name}
                         </div>
-                        <div class="result-details">
+                        <div class="result-details text-sm text-gray-500 mt-1">
                             ${result.imageCount} images • HTML folder with external files${overlayInfo}
                         </div>
                     </div>
-                    <div class="result-actions">
-                        <button type="button" class="btn btn-primary btn-sm preview-btn" data-index="${index}">
+                    <div class="result-actions flex gap-2">
+                        <button type="button" class="btn btn-primary btn-sm preview-btn px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md flex items-center transition-colors" data-index="${index}">
                             <span class="glyphicon glyphicon-eye-open mr-1"></span>
                             Preview
                         </button>
-                        <button type="button" class="btn btn-success btn-sm download-btn" data-index="${index}">
+                        <button type="button" class="btn btn-success btn-sm download-btn px-3 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md flex items-center transition-colors" data-index="${index}">
                             <span class="glyphicon glyphicon-download mr-1"></span>
-                            Download Folder
+                            Download Data Loop
                         </button>
                     </div>
                 </div>
