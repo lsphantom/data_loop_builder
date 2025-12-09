@@ -1,0 +1,35 @@
+{
+  "name": "data-loop-builder",
+  "version": "1.0.0",
+  "description": "A web application for creating interactive HTML image loops from directories of images",
+  "main": "app/webapp/index.html",
+  "scripts": {
+    "start": "cd app/webapp && python3 -m http.server 8080",
+    "dev": "cd app/webapp && python3 -m http.server 3000",
+    "build": "echo 'No build process required - static files ready for deployment'",
+    "test": "echo 'No tests specified'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lsphantom/data_loop_builder.git"
+  },
+  "keywords": [
+    "image-loops",
+    "data-visualization",
+    "html",
+    "javascript",
+    "web-app",
+    "static-site"
+  ],
+  "authors": [
+    "Bryan Guarente (The COMET Program / UCAR)",
+    "Gary Pacheco (The COMET Program / UCAR)"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/lsphantom/data_loop_builder#readme",
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

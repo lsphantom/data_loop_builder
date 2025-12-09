@@ -1,0 +1,16 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - echo "Pre-build phase - no dependencies to install"
+    build:
+      commands:
+        - echo "Building Data Loop Builder static web app"
+        - echo "No build process required - serving static files"
+  artifacts:
+    baseDirectory: app/webapp
+    files:
+      - '**/*'
+  cache:
+    paths: []
