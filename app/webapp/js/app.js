@@ -135,16 +135,23 @@ class LoopBuilderApp {
             const reader = dirEntry.createReader();
             
             const readEntries = () => {
-                reader.readEntries((entries) => {
+                reader.readEntries(async (entries) => {
                     if (entries.length) {
+                        const filePromises = [];
                         for (const entry of entries) {
                             if (entry.isFile) {
-                                entry.file((file) => {
-                                    file.relativePath = entry.fullPath;
-                                    files.push(file);
-                                });
+                                filePromises.push(
+                                    new Promise((resolveFile) => {
+                                        entry.file((file) => {
+                                            file.relativePath = entry.fullPath;
+                                            resolveFile(file);
+                                        });
+                                    })
+                                );
                             }
                         }
+                        const retrievedFiles = await Promise.all(filePromises);
+                        files.push(...retrievedFiles);
                         readEntries(); // Continue reading
                     } else {
                         resolve(files);
