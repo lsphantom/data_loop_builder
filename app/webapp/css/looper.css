@@ -14,28 +14,32 @@
 	display: none;
 	z-index: 5;
 }
-.overlay-toggle {
-	top: 5px;
-	left: 5px;
-	position: absolute;
-	padding: 5px 8px;
-	padding-left: 30px;
-	-webkit-border-radius: 8px;
-	-moz-border-radius: 8px;
-	border-radius: 8px;
-	z-index: 11;
-	font-size: 12px;
-	font-weight: bold;
+/* Overlay toggle in nav_left */
+.nav_left .overlay-toggle {
+	float: left;
+	display: block;
+	min-width: 32px;
+	height: 32px;
+	margin: 4px;
 	cursor: pointer;
-	color: #fff;
-	text-decoration: none;
-	background: rgba(0,0,0,0.7) url(controls/overlay_toggle_bg.png) center left no-repeat;
+	border: 2px solid #333;
+	text-align: center;
+	line-height: 28px;
+	border-radius: 4px;
+	background: #f8f9fa;
+	color: #333;
+	font-size: 14px;
+	padding: 0 8px;
 }
-.overlay-toggle:visited {
-	color: #fff;
+.nav_left .overlay-toggle:hover {
+	color: #007bff;
+	border-color: #007bff;
+	background: #e7f1ff;
 }
-.overlay-toggle:hover {
-	background-color: rgba(20,20,20,0.7);
+.nav_left .overlay-toggle.active {
+	background: #0078d4;
+	color: white;
+	border-color: #106ebe;
 }
 /* ////////////////////////////////
 NAVIGATION

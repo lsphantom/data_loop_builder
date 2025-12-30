@@ -110,8 +110,20 @@
 			stopIt();
             resetSlides();
           });
-          
-          /// SPEED CONTROLS
+                    // OVERLAY TOGGLE BUTTON
+          $nav.children('.nav_left').children('.overlay-toggle').click(function() {
+            const overlay = $('#overlayImage');
+            const button = $(this);
+            
+            if (overlay.is(':visible')) {
+              overlay.hide();
+              button.removeClass('active').val('👁');
+            } else {
+              overlay.show();
+              button.addClass('active').val('👁');
+            }
+          });
+                    /// SPEED CONTROLS
         
           var $slower = $nav.children('.nav_right').children('.speed').children('.slower');
           var $faster = $nav.children('.nav_right').children('.speed').children('.faster');
@@ -293,6 +305,11 @@
         if (options.slide_captions === true) {
 			$nav_left.append('<span class="caption"></span>');
 			$nav_left.children('.caption').html($this.children('img:last').attr('alt'));
+        }
+        
+        // Add overlay toggle button to left side if overlay exists
+        if (options.overlay_toggle === true) {
+          $nav_left.append('<input type="button" class="overlay-toggle active" title="Show/Hide Overlay" value="👁" tabindex="0" accesskey="o" />');
         }
 		
 		if (options.slide_counter === true) {

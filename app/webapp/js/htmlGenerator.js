@@ -19,7 +19,7 @@ class HTMLGenerator {
     static async generateFolderStructure(folderName, processedData, config) {
         const { images, dimensions } = processedData;
         const title = this.sanitizeTitle(folderName);
-        const looperConfig = this.generateLooperConfig(config);
+        const looperConfig = this.generateLooperConfig(config, !!processedData.overlay);
         const width = dimensions.width || 800;
 
         // Create the folder structure object
@@ -93,19 +93,19 @@ class HTMLGenerator {
             return `        <img src="${filename}" alt="${image.alt}" class="img-responsive">`;
         }).join('\n');
 
-        // Generate overlay HTML and toggle if overlay exists
+        // Generate overlay HTML if overlay exists
         let overlayHTML = '';
         let overlayToggleHTML = '';
         if (overlayData) {
             const overlayFilename = this.sanitizeFilename(overlayData.name);
             overlayHTML = `
-                        <img id="overlayImage" src="${overlayFilename}" alt="Overlay" class="overlay-image" style="display: none;">`;
+                        <img id="overlayImage" src="${overlayFilename}" alt="Overlay" class="overlay-image" style="display: block;">`;
             
             overlayToggleHTML = `
                         <div class="overlay-controls">
-                            <button type="button" id="overlayToggle" class="overlay-toggle" title="Toggle Overlay">
-                                <span class="glyphicon glyphicon-eye-close"></span>
-                                <span class="overlay-label">Show</span>
+                            <button type="button" id="overlayToggle" class="overlay-toggle active" title="Toggle Overlay">
+                                <span class="overlay-icon">👁</span>
+                                <span class="overlay-label">Hide</span>
                             </button>
                         </div>`;
         }
@@ -127,17 +127,17 @@ class HTMLGenerator {
                 const overlay = $('#overlayImage');
                 const button = $(this);
                 const label = button.find('.overlay-label');
-                const icon = button.find('.glyphicon');
+                const icon = button.find('.overlay-icon');
                 
                 if (overlay.is(':visible')) {
                     overlay.hide();
                     label.text('Show');
-                    icon.removeClass('glyphicon-eye-open').addClass('glyphicon-eye-close');
+                    icon.text('👁');
                     button.removeClass('active');
                 } else {
                     overlay.show();
                     label.text('Hide');
-                    icon.removeClass('glyphicon-eye-close').addClass('glyphicon-eye-open');
+                    icon.text('👁');
                     button.addClass('active');
                 }
             });` : ''}
@@ -315,8 +315,43 @@ body {
     color: white;
 }
 
-.overlay-toggle .glyphicon {
+.overlay-toggle .overlay-icon {
     margin-right: 4px;
+}
+
+/* Overlay Toggle in Navigation Left */
+.nav_left .overlay-toggle {
+    float: left;
+    display: block;
+    min-width: 32px;
+    height: 32px;
+    margin: 4px;
+    cursor: pointer;
+    border: 2px solid #333;
+    text-align: center;
+    line-height: 28px;
+    border-radius: 4px;
+    background: #f8f9fa;
+    color: #333;
+    font-size: 16px;
+    padding: 0 4px;
+    font-family: Arial, sans-serif;
+}
+
+.nav_left .overlay-toggle:hover {
+    color: #007bff;
+    border-color: #007bff;
+    background: #e7f1ff;
+}
+
+.nav_left .overlay-toggle.active {
+    background: #0078d4;
+    color: white;
+    border-color: #106ebe;
+}
+
+.nav_left .overlay-toggle.active:hover {
+    background: #106ebe;
 }`;
     }
 
@@ -485,14 +520,15 @@ body {
 })(jQuery);`;
     }
 
-    static generateLooperConfig(config) {
+    static generateLooperConfig(config, hasOverlay = false) {
         return JSON.stringify({
             navigation: config.showNavigation,
             slide_captions: false,
             slide_counter: config.showCounter,
             speed_controls: config.showSpeedControls,
             forward_backward: config.showStepControls,
-            autoplay: config.autoplay
+            autoplay: config.autoplay,
+            overlay_toggle: hasOverlay
         }, null, 2);
     }
 

@@ -467,13 +467,13 @@ class LoopBuilderApp {
         if (result.hasOverlay && result.overlayFilename && folderStructure.files[result.overlayFilename]) {
             overlayFile = folderStructure.files[result.overlayFilename];
             overlayHTML = `
-                        <img id="overlayImage" src="${overlayFile.content}" alt="Overlay" class="overlay-image" style="display: none;">`;
+                        <img id="overlayImage" src="${overlayFile.content}" alt="Overlay" class="overlay-image" style="display: block;">`;
             
             overlayToggleHTML = `
                         <div class="overlay-controls">
-                            <button type="button" id="overlayToggle" class="overlay-toggle" title="Toggle Overlay">
-                                <span class="glyphicon glyphicon-eye-close"></span>
-                                <span class="overlay-label">Show</span>
+                            <button type="button" id="overlayToggle" class="overlay-toggle active" title="Toggle Overlay">
+                                <span class="glyphicon glyphicon-eye-open"></span>
+                                <span class="overlay-label">Hide</span>
                             </button>
                         </div>`;
         }

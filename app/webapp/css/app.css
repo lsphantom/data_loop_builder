@@ -402,8 +402,14 @@ section.col-lg-8 {
     color: white;
 }
 
+.overlay-toggle .overlay-icon {
+    margin-right: 4px;
+}
+
+/* Glyphicon Support */
 .overlay-toggle .glyphicon {
     margin-right: 4px;
+    font-size: 12px;
 }
 
 .btn:hover {
